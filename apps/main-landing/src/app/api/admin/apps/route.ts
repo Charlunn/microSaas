@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SDKError, validateManifestOrThrow } from "@factory/core-sdk";
-import { listRegisteredApps, registerApp } from "@factory/database";
+import { DatabaseConflictError, listRegisteredApps, registerApp } from "@factory/database";
+import { enforceAdminScopes } from "@/lib/admin-auth";
 
 function sdkErrorToResponse(error: SDKError) {
   if (error.code === "MANIFEST_INVALID") {
@@ -10,13 +11,40 @@ function sdkErrorToResponse(error: SDKError) {
     );
   }
 
+  if (error.code === "FORBIDDEN") {
+    return NextResponse.json(
+      { ok: false, code: error.code, error: error.message, details: error.details },
+      { status: 403 }
+    );
+  }
+
+  if (error.code === "UNAUTHORIZED") {
+    return NextResponse.json(
+      { ok: false, code: error.code, error: error.message, details: error.details },
+      { status: 401 }
+    );
+  }
+
   return NextResponse.json(
     { ok: false, code: error.code, error: error.message, details: error.details },
     { status: 409 }
   );
 }
 
-export async function GET() {
+function databaseConflictToResponse(error: DatabaseConflictError) {
+  const status = error.code === "VERSION_CONFLICT" ? 409 : 409;
+  return NextResponse.json(
+    { ok: false, code: error.code, error: error.message, details: error.details },
+    { status }
+  );
+}
+
+export async function GET(request: NextRequest) {
+  const authError = await enforceAdminScopes(request, ["apps:read"]);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const items = await listRegisteredApps();
     return NextResponse.json({ ok: true, items });
@@ -27,6 +55,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const authError = await enforceAdminScopes(request, ["apps:write"]);
+  if (authError) {
+    return authError;
+  }
+
   try {
     const body = (await request.json()) as {
       appId: string;
@@ -61,6 +94,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof SDKError) {
       return sdkErrorToResponse(error);
+    }
+
+    if (error instanceof DatabaseConflictError) {
+      return databaseConflictToResponse(error);
     }
 
     const message = error instanceof Error ? error.message : "Failed to register app";

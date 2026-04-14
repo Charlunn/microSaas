@@ -215,7 +215,7 @@ export function LandingPage({ data }: LandingPageProps) {
                   </div>
                 </div>
                 <a href={`/apps/${app.slug}`} className="drop-link terminal-font">
-                  {t.accessNode} // {app.slug}
+                  {`${t.accessNode} // ${app.slug}`}
                 </a>
               </div>
             </article>

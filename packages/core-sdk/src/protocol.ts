@@ -7,6 +7,52 @@ export type AccessRequirement = {
 
 export type PaymentCapability = "none" | "checkout";
 
+export type BillingInterval = "one_time" | "month" | "year";
+
+export type StandardEntityStatus = "active" | "disabled";
+
+export interface ProductContract {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  status: StandardEntityStatus;
+}
+
+export interface PriceContract {
+  id: string;
+  productId: string;
+  amountCents: number;
+  currency: string;
+  interval: BillingInterval;
+  status: StandardEntityStatus;
+}
+
+export interface UserContract {
+  id: string;
+  email: string;
+  displayName?: string | null;
+}
+
+export type OrderStatus = "pending" | "paid" | "canceled" | "refunded";
+
+export interface OrderItemContract {
+  productId: string;
+  priceId: string;
+  quantity: number;
+  unitAmountCents: number;
+}
+
+export interface OrderContract {
+  id: string;
+  appId: string;
+  userId: string;
+  status: OrderStatus;
+  totalAmountCents: number;
+  currency: string;
+  items: OrderItemContract[];
+}
+
 export interface AppManifest {
   id: string;
   slug: string;
@@ -16,6 +62,21 @@ export interface AppManifest {
   access: AccessRequirement;
   capabilities: {
     payment: PaymentCapability;
+  };
+  standards?: {
+    catalog?: {
+      enabled: boolean;
+      productsEndpoint: string;
+      pricesEndpoint: string;
+    };
+    orders?: {
+      enabled: boolean;
+      ordersEndpoint: string;
+    };
+    users?: {
+      enabled: boolean;
+      usersEndpoint: string;
+    };
   };
 }
 
@@ -45,6 +106,23 @@ export function validateManifest(manifest: AppManifest): string[] {
 
   if (!["none", "checkout"].includes(manifest.capabilities.payment)) {
     errors.push("capabilities.payment must be none|checkout");
+  }
+
+  if (manifest.standards?.catalog?.enabled) {
+    if (!manifest.standards.catalog.productsEndpoint.startsWith("/")) {
+      errors.push("standards.catalog.productsEndpoint must start with '/'");
+    }
+    if (!manifest.standards.catalog.pricesEndpoint.startsWith("/")) {
+      errors.push("standards.catalog.pricesEndpoint must start with '/'");
+    }
+  }
+
+  if (manifest.standards?.orders?.enabled && !manifest.standards.orders.ordersEndpoint.startsWith("/")) {
+    errors.push("standards.orders.ordersEndpoint must start with '/'");
+  }
+
+  if (manifest.standards?.users?.enabled && !manifest.standards.users.usersEndpoint.startsWith("/")) {
+    errors.push("standards.users.usersEndpoint must start with '/'");
   }
 
   return errors;

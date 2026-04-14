@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SDKError, useAuth } from "@factory/core-sdk";
+import { SDKError, useAuth as createAuth } from "@factory/core-sdk";
 import { findRegisteredAppBySlug } from "@factory/database";
-
-const DEMO_USER_ID = "11111111-1111-1111-1111-111111111111";
 
 function sdkErrorToResponse(error: SDKError) {
   if (error.code === "MANIFEST_NOT_FOUND") {
@@ -31,8 +29,14 @@ export async function GET(
       );
     }
 
-    const userId = request.nextUrl.searchParams.get("userId") || DEMO_USER_ID;
-    const auth = useAuth({ userId });
+    const userId = request.nextUrl.searchParams.get("userId")?.trim();
+    if (!userId) {
+      return NextResponse.json(
+        { ok: false, code: "UNAUTHORIZED", error: "userId is required" },
+        { status: 401 }
+      );
+    }
+    const auth = createAuth({ userId });
     const hasAccess = await auth.checkAccess(app.slug, app.category_id);
 
     return NextResponse.json({

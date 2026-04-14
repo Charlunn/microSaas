@@ -1,4 +1,4 @@
-export const manifestTemplate = `import type { AppManifest } from "@factory/core-sdk";
+import type { AppManifest } from "@factory/core-sdk";
 
 export const manifest: AppManifest = {
   id: "__APP_ID__",
@@ -13,4 +13,3 @@ export const manifest: AppManifest = {
     payment: "__PAYMENT__"
   }
 };
-`;

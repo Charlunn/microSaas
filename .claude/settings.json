@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter @factory/one-click-sample typecheck)",
+      "Bash(printenv ADMIN_API_TOKEN)",
+      "Bash(printenv NEXT_PUBLIC_SUPABASE_URL)",
+      "Bash(printenv NEXT_PUBLIC_SUPABASE_ANON_KEY)"
+    ]
+  }
+}

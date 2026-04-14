@@ -24,6 +24,7 @@ if (fs.existsSync(rootEnvPath)) {
 }
 
 const nextConfig = {
+  output: "standalone",
   transpilePackages: ["@factory/core-sdk", "@factory/database", "@factory/ui-kit", "@factory/demo-child"]
 };
 
