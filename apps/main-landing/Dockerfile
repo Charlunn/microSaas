@@ -30,4 +30,4 @@ COPY --from=builder /app/apps/main-landing/.next/static ./apps/main-landing/.nex
 RUN mkdir -p ./apps/main-landing/public
 USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "apps/main-landing/server.js"]
