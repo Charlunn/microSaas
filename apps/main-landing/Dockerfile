@@ -27,7 +27,7 @@ ENV PORT=3000
 RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
 COPY --from=builder /app/apps/main-landing/.next/standalone ./
 COPY --from=builder /app/apps/main-landing/.next/static ./apps/main-landing/.next/static
-COPY --from=builder /app/apps/main-landing/public ./apps/main-landing/public
+RUN mkdir -p ./apps/main-landing/public
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
