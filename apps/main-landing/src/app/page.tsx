@@ -1,6 +1,8 @@
 import { LandingPage } from "@/components/landing-page";
 import { getLandingDashboardData } from "@/lib/landing-data";
 
+export const dynamic = "force-dynamic";
+
 function MissingEnvFallback({ message }: { message: string }) {
   return (
     <main className="page-root">
